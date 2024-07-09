@@ -57,6 +57,6 @@ end
 % histogram(pref,'BinLimits',[0.5,3.5],'normalization','pdf');
 % xlabel('Preferred Direction');
 % ylabel('Proportion of Neurons');
-% title('Histogram of Preferred Directions of Sensory Neurons (Nerve Block)');
-%% Save to compare Con with NB
+% title('MIo');
+%% Save to compare with other group
 pref1 = pref;

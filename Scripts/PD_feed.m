@@ -1,5 +1,6 @@
 %% Determine if neuron is directionally tuned & get PDs of tuned (feeding)
 %% Determine if neuron is directionally tuned
+% Control
 p = [];
 for u = 1:length(FRbyUnit)
     p(u) = kruskalwallis(FRbyUnit{u}',[],'off');

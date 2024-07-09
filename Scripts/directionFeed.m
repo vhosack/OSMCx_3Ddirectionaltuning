@@ -5,6 +5,7 @@ NerveBlock = load('20190510_Kinematics.mat');
 Kinematics = [Control NerveBlock];
 % copy and paste paired dataset paths
 %% Instantaneous 3D Directions
+% Get gape cycle info
 cyclemat = {Kinematics(1).Kinematics.GapeCycleInfo Kinematics(2).Kinematics.GapeCycleInfo};
 
 % chews = find(contains(Kinematics(1).Kinematics.GapeCycleInfo.CycleType,'Swallow'));
@@ -15,13 +16,14 @@ cyclemat = {Kinematics(1).Kinematics.GapeCycleInfo Kinematics(2).Kinematics.Gape
 cyclengths = {cyclemat{1,1}.MaxGapeEnd - cyclemat{1,1}.MaxGapeStart cyclemat{1,2}.MaxGapeEnd - cyclemat{1,2}.MaxGapeStart};
 Controlcyc = table2array(cyclemat{1,1}(:,9:11));
 NBcyc = table2array(cyclemat{1,2}(:,9:11));
+
+% Control
 maxgapes = {};
 tonguetip_x = {}; tonguetip_y = {}; tonguetip_z = {};
 yaw = []; pitch = [];
 a3 = []; a2 = []; f = [];
 tt = {};
 v = {};
-%Control
 for cycle = 1:length(cyclengths{1,1})
     trial = cyclemat{1,1}.Trialname{cycle};
     tempdata = Kinematics(1).Kinematics.Cranium.points{strcmp(trial,Kinematics(1).Kinematics.TrialNames)};
@@ -43,9 +45,9 @@ for cycle = 1:length(cyclengths{1,1})
     for i = 1:length(tp2)
         v1 = [tonguetip_x{cycle}(tp(i)) tonguetip_z{cycle}(tp(i)) tonguetip_y{cycle}(tp(i))];
         v2 = [tonguetip_x{cycle}(tp2(i)) tonguetip_z{cycle}(tp2(i)) tonguetip_y{cycle}(tp2(i))];
-        a3(cycle,i) = vecangle360(v1,v2,npz{1});
-        a2(cycle,i) = vecangle360(v1,v2,npz{2});
-        f(cycle,i) = tonguetip_x{cycle}(tp2(i)) - tonguetip_x{cycle}(tp(i));
+        a3(cycle,i) = vecangle360(v1,v2,npz{1}); % left-right
+        a2(cycle,i) = vecangle360(v1,v2,npz{2}); % inferior-superior
+        f(cycle,i) = tonguetip_x{cycle}(tp2(i)) - tonguetip_x{cycle}(tp(i)); % posterior-anterior
         
         % Yaw and Pitch
         pt = v2-v1;
@@ -77,8 +79,8 @@ TT = TT(pos1);
 A3=a3(:); A2=a2(:); F=f(:);
 A3 = A3(pos1); A2 = A2(pos1); F = F(pos1);
 
-cat = cell(length(A3),1);
-vecM = cell(length(A3),1);
+cat = cell(length(A3),1); % categorical direction
+vecM = cell(length(A3),1); % representative unit vector
 x = []; y = []; z = [];
 for ang = 1:length(A3)
     if A3(ang) > 0 && A2(ang) > 0 && F(ang) > 0
@@ -115,7 +117,7 @@ for ang = 1:length(A3)
         vecM{ang} = [-1,-1,1];
     end
 
-    % Direction angles
+    % Direction angles (to each axis)
     pt = vecM{ang};
     x(ang) = atan2(sqrt(pt(2)^2+pt(3)^2),pt(1));
     y(ang) = atan2(sqrt(pt(1)^2+pt(3)^2),pt(2));
@@ -129,7 +131,7 @@ catind = {}; mag = {};
 % t = tiledlayout(4,2,'TileSpacing','Compact');
 for c = 1:length(category)
     catind{c} = find(contains(cat,category{c}));
-    mag{c} = abs(A3(catind{c})); %angle
+    mag{c} = abs(A3(catind{c})); % angle
 
 %     nexttile
 %     histogram(mag{c});
@@ -139,35 +141,26 @@ end
 % title(t,'Distribution of directions')
 % xlabel(t,'Angle (°)')
 
-x = x'; y = y'; z = z';
-
 % figure;hist(A3)
 % figure;hist(A2)
 
-% Y = yaw(:);
-% Y = Y(pos1);
-% P = pitch(:);
-% P = P(pos1);
+% Y = yaw(:); Y = Y(pos1);
+% P = pitch(:); P = P(pos1);
 % Yaw = circ_rad2ang(Y);
 % Pitch = circ_rad2ang(P);
 % figure;hist(Yaw)
 % figure;hist(Pitch)
 
 % cosine directions
-Ang1 = x(:);
-Ang2 = y(:);
-Ang3 = z(:);
+Ang1 = x(:); Ang2 = y(:); Ang3 = z(:);
 mx = cos(Ang1); my = cos(Ang2); mz = cos(Ang3);
 
 ControlDir = A3;%mag{1};
 % ControlInd = catind{1};
-% ControlDir = Yaw;
-% ControlDir = Xcomp;
-% figure;hist(A2);
+% figure;hist(A3);
 
 % Trajectory Mat
-ControlTraj = TT; %[tonguetip_x; tonguetip_y; tonguetip_z];
-
+ControlTraj = TT;
 %%
 % Nerve Block
 maxgapes = {};
@@ -186,7 +179,7 @@ for cycle = 1:length(cyclengths{1,2})
     tonguetip_z{cycle} = tempdata(allcycles(cycle,1):allcycles(cycle,3),30);
     
     % Instantaneous direction every 100 ms
-    npz={[0 0 1] [0 -1 0]};  %reference plane
+    npz={[0 0 1] [0 -1 0]}; %reference plane
     fin = cyclengths{1,2}(cycle);
     tp=1:20:fin; %timepoints
     tp2=20:20:fin;
@@ -196,10 +189,11 @@ for cycle = 1:length(cyclengths{1,2})
     for i = 1:length(tp2)
         v1 = [tonguetip_x{cycle}(tp(i)) tonguetip_z{cycle}(tp(i)) tonguetip_y{cycle}(tp(i))];
         v2 = [tonguetip_x{cycle}(tp2(i)) tonguetip_z{cycle}(tp2(i)) tonguetip_y{cycle}(tp2(i))];
-        a3(cycle,i) = vecangle360(v1,v2,npz{1});
-        a2(cycle,i) = vecangle360(v1,v2,npz{2});
-        f(cycle,i) = tonguetip_x{cycle}(tp2(i)) - tonguetip_x{cycle}(tp(i));
+        a3(cycle,i) = vecangle360(v1,v2,npz{1}); % left-right
+        a2(cycle,i) = vecangle360(v1,v2,npz{2}); % inferior-superior
+        f(cycle,i) = tonguetip_x{cycle}(tp2(i)) - tonguetip_x{cycle}(tp(i)); % posterior-anterior
 
+        % Yaw and Pitch
         pt = v2-v1;
         yaw(cycle,i) = atan2(pt(3), pt(1));
         adj = sqrt(pt(1)^2 + pt(3)^2);
@@ -227,13 +221,10 @@ pos2 = find(~cellfun(@isempty,TT));
 TT = TT(pos2);
 
 % Distribution of directions
-% A=a(:);
-% A = A(pos2);
+% A=a(:); A = A(pos2);
 % figure;hist(A)
-% Y = yaw(:);
-% Y = Y(pos2);
-% P = pitch(:);
-% P = P(pos2);
+% Y = yaw(:); Y = Y(pos2);
+% P = pitch(:); P = P(pos2);
 % Yaw = circ_rad2ang(Y);
 % Pitch = circ_rad2ang(P);
 % figure;hist(Yaw)
@@ -243,8 +234,8 @@ TT = TT(pos2);
 A3=a3(:); A2=a2(:); F=f(:);
 A3 = A3(pos2); A2 = A2(pos2); F = F(pos2);
 
-cat2 = cell(length(A3),1);
-vecM2 = cell(length(A3),1);
+cat2 = cell(length(A3),1); % categorical direction
+vecM2 = cell(length(A3),1); % representative unit vectors
 x = []; y = []; z = [];
 for ang = 1:length(A3)
     if A3(ang) > 0 && A2(ang) > 0 && F(ang) > 0
@@ -263,7 +254,6 @@ for ang = 1:length(A3)
         cat2{ang} = '+-+';
         vecM2{ang} = [1,-1,1];
     end
-    
 
     if A3(ang) > 0 && A2(ang) > 0 && F(ang) < 0
         cat2{ang} = '++-';
@@ -282,13 +272,13 @@ for ang = 1:length(A3)
         vecM2{ang} = [-1,-1,1];
     end
 
-    % Direction angles
+    % Direction angles (to each axis)
     pt = vecM2{ang};
     x(ang) = atan2(sqrt(pt(2)^2+pt(3)^2),pt(1));
     y(ang) = atan2(sqrt(pt(1)^2+pt(3)^2),pt(2));
     z(ang) = atan2(sqrt(pt(1)^2+pt(2)^2),pt(3));
-
 end
+x = x'; y = y'; z = z';
 
 category2 = {'-++', '+++', '--+', '+-+','-+-','++-','---','+--'};
 catind2 = {};
@@ -297,7 +287,7 @@ mag2 = {};
 % t = tiledlayout(4,2,'TileSpacing','Compact');
 for c = 1:length(category2)
     catind2{c} = find(contains(cat2,category2{c}));
-    mag2{c} = abs(A3(catind2{c})); %angle
+    mag2{c} = abs(A3(catind2{c})); % angle
 
 %     nexttile
 %     histogram(mag2{c});
@@ -307,22 +297,19 @@ end
 % title(t,'Distribution of directions')
 % xlabel(t,'Angle (°)')
 
-Ang1 = x(:);
-Ang2 = y(:);
-Ang3 = z(:);
+Ang1 = x(:); Ang2 = y(:); Ang3 = z(:);
 mx2 = cos(Ang1); my2 = cos(Ang2); mz2 = cos(Ang3);
 
 NBDir = A3; %mag2{1}
 % NBInd = catind2{1};
 
-% NBDir = A;
-% NBDir = Yaw;
-
 % Trajectory Mat
-NBTraj = TT; %[tonguetip_x; tonguetip_y; tonguetip_z];
+NBTraj = TT;
 %% Sample Trials
-% Pick 45 trials from each range of directions
-%Control
+% Pick equal number of trials from each range of directions
+
+% % Control
+% A3 / Left-Right directional angles
 % directions = 0:5:30;
 % sample = [];
 % sampleidx = [];
@@ -350,9 +337,9 @@ end
 Con = sample(:);
 ConI = sampleidx(:,:);
 % figure;hist(Con)
-
 %%
-% Nerve Block
+% % Nerve Block
+% A3 / Left-Right directional angles
 % directions = 0:5:30;
 % sample2 = [];
 % sampleidx2 = [];
@@ -380,9 +367,9 @@ end
 NB = sample2(:);
 NBI = sampleidx2(:,:);
 % figure;hist(NB)
-
 %% Neural Times
-% Get neural times of max gapes
+% Get neural times for each interval
+
 % Control
 maxtimes = [];
 for cycle = 1:length(cyclengths{1,1})
@@ -404,11 +391,10 @@ for cycle = 1:length(cyclengths{1,1})
 end
 
 ControlTimes = maxtimes(:);
-ControlTimes = ControlTimes(pos1);
+ControlTimes = ControlTimes(pos1); % start times
 Cendtimes = ControlTimes + 0.100;
 % ControlTimes = Controltimes(pos1) - 0.05; %% shift back 50 ms
 % Cendtimes = Controltimes(pos1) + 0.05;
-
 %%
 % Nerve Block
 maxtimes = [];
@@ -431,7 +417,7 @@ for cycle = 1:length(cyclengths{1,2})
 end
 
 NBTimes = maxtimes(:);
-NBTimes = NBTimes(pos2);
+NBTimes = NBTimes(pos2); % start times
 NBendtimes = NBTimes + 0.100;
 % NBTimes = NBtimes(pos2) - 0.05; %% shift back 50 ms
 % NBendtimes = NBtimes(pos2) + 0.05;
@@ -441,18 +427,16 @@ M1F = load('20190509_M1F_sortedspikes.mat'); %% paths to neural data
 M1U = load('20190509_M1U_sortedspikes.mat');
 M1F = struct2cell(M1F); 
 M1U = struct2cell(M1U);
-Units = {[M1F; M1U]};
+Units = {[M1F; M1U]}; %% combine regions
 Units = Units{1};
 % Units = M1U; %% run individual area
 
-spikecount = [];
-timespikes = {};
-meanfiring = [];
+spikecount = []; timespikes = {}; meanfiring = [];
 for u = 1:length(Units)
     temp = Units{u}.times;
     for t=1:length(ControlTimes)
         inx=[];
-        inx=find(temp >= ControlTimes(t) & temp <= Cendtimes(t));
+        inx=find(temp >= ControlTimes(t) & temp <= Cendtimes(t)); %% spike b/t start and end
         if inx == 0
             spikecount(t,u) = [];
         end
@@ -462,7 +446,7 @@ for u = 1:length(Units)
             Ts = Ts - temp(1);
         end
         timespikes{t} = Ts;
-        meanfiring(t,u) = spikecount(t,u)/0.100; %% 100 ms
+        meanfiring(t,u) = spikecount(t,u)/0.100; %% avg over 100 ms
     end
 end
 
@@ -483,68 +467,45 @@ for d = 1:(length(directions)-1)
     end
 end
 M1Con = meanfr;
-
-% % Tuning Curves
-% yFit6 = [];
-% angle = 1:8; % x-axis
-% m = [];
-% for unit = 1:length(Units)
-%     y = M1Con(:,unit)';
-%     cos_fun = @(p,theta) p(1)+p(2)*cos(theta/180-p(3));
-%     p = nlinfit(angle,y,cos_fun,[1 1 0]);
-%     yFit6(:,unit) = cos_fun(p,angle);
-%     m(unit) = max(yFit6(:,unit));
-% end
-
 %%
+% Create tuning curve
 angle = 1:(length(directions)-1); % x-axis
-% angle = 1:12;
 for u = 12 %length(Units)
     figure;
     axes1 = axes;
     hold(axes1,'on');
     plot(angle,M1Con(:,u),'LineWidth',1.5,'Color','r') % actual data
     hold on
-%     plot(angle,yFit6(:,u),'r-.') % cosine fit
-%     legend('Actual Data','Cosine Fit')
 end
-% ylabel('Average Firing Rate');
-% xlabel('3D angle (°)');
+ylabel('Average Firing Rate');
+xlabel('3D angle (°)');
 title('MIo');
-xlim(axes1,[0.5 3.5]);
+xlim(axes1,[0.5 8.5]);
 box(axes1,'on');
 hold(axes1,'off');
-set(axes1,'FontSize',18,'XTick',[1 2 3 4 5 6 7 8 9 10 11 12],'XTickLabel',...
-    {'-30:-25','-25:-20','-20:-15','-15:-10','-10:-5','-5:0','0:5','5:10','10:15','15:20','20:25','25:30'});
-%     {'-++', '+++', '--+', '+-+','-+-','++-','---','+--'});
-
-%     {'-30:-25','-25:-20','-20:-15','-15:-10','-10:-5','-5:0','0:5','5:10','10:15','15:20','20:25','25:30'});
-% {'0:5','5:10','10:15','15:20','20:25','25:30'});
-%     {'-30:-25','-25:-20','-20:-15','-15:-10','-10:-5','-5:0'});
+set(axes1,'FontSize',18,'XTick',[1 2 3 4 5 6 7 8],'XTickLabel',...
+    {'-++', '+++', '--+', '+-+','-+-','++-','---','+--'});
 
 % set(axes1,'FontSize',12,'XTick',[1 2 3 4 5 6 7 8 9 10 11 12],'XTickLabel',...
 %     {'-30:-25','-25:-20','-20:-15','-15:-10','-10:-5','-5:0','0:5','5:10','10:15','15:20','20:25','25:30'});
 % set(axes1,'FontSize',12,'XTick',[1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32],'XTickLabel',...
 %     {'-160:-150','-150:-140','-140:-130','-130:-120','-120:-110','-110:-100','-100:-90','-90:-80','-80:-70','-70:-60','-60:-50','-50:-40','-40:-30','-30:-20','-20:-10','-10:0','0:10','10:20','20:30','30:40','40:50','50:60','60:70','70:80','80:90','90:100','100:110','110:120','120:130','130:140','140:150','150:160'});
-
 %%
 % Nerve Block
 M1F = load('20190510_M1F_sortedspikes.mat'); %% paths to neural data
 M1U = load('20190510_M1U_sortedspikes.mat');
 M1F = struct2cell(M1F); 
 M1U = struct2cell(M1U);
-Units = {[M1F; M1U]};
+Units = {[M1F; M1U]}; %% combine regions
 Units = Units{1};
 % Units = M1U; %% run individual area
 
-spikecount = [];
-timespikes = {};
-meanfiring = [];
+spikecount = []; timespikes = {}; meanfiring = [];
 for u = 1:length(Units)
     temp = Units{u}.times;
     for t=1:length(NBTimes)
         inx=[];
-        inx=find(temp >= NBTimes(t) & temp <= NBendtimes(t));
+        inx=find(temp >= NBTimes(t) & temp <= NBendtimes(t)); %% spikes b/t start and end
         if inx == 0
             spikecount(t,u) = [];
         end
@@ -554,7 +515,7 @@ for u = 1:length(Units)
             Ts = Ts - temp(1);
         end
         timespikes{t} = Ts;
-        meanfiring(t,u) = spikecount(t,u)/0.100; %% 100 ms
+        meanfiring(t,u) = spikecount(t,u)/0.100; %% avg over100 ms
     end
 end
 
@@ -575,70 +536,52 @@ for d = 1:(length(directions)-1)
     end
 end
 M1NB = meanfr;
-
-% % Tuning Curves
-% yFit = [];
-% yFit8 = [];
-% angle = 1:8; % x-axis
-% m = [];
-% for unit = 1:length(Units)
-%     y = M1NB(:,unit)';
-%     cos_fun = @(p,theta) p(1)+p(2)*cos(theta/180-p(3));
-%     p = nlinfit(angle,y,cos_fun,[1 1 0]);
-% %     yFit(:,unit) = cos_fun(p,[-30:30]);
-%     yFit8(:,unit) = cos_fun(p,angle);
-% %     m(unit) = max(yFit(:,unit));
-% end
-
 %%
+% Create tuning curve
+angle = 1:(length(directions)-1);
 for u = 45 %length(Units)
     figure;
     axes1 = axes;
     hold(axes1,'on');
     plot(angle,M1NB(:,u)) % actual data
-    xlabel('Angle')
-    ylabel('Average Firing Rate')
     hold on
-%     plot(angle,yFit6(:,u),'r-.') % cosine fit
-    legend('Actual Data','Cosine Fit')
 end
 ylabel('Average Firing Rate');
-xlabel('Angle (deg)');
+xlabel('3D angle (°)');
 title('MIo');
-xlim(axes1,[0.5 4.5]);
+xlim(axes1,[0.5 8.5]);
 box(axes1,'on');
 hold(axes1,'off');
-set(axes1,'FontSize',12,'XTick',[1 2 3 4 5 6 7 8 9 10 11 12],'XTickLabel',...
-    {'-30:-25','-25:-20','-20:-15','-15:-10','-10:-5','-5:0','0:5','5:10','10:15','15:20','20:25','25:30'});
+set(axes1,'FontSize',12,'XTick',[1 2 3 4 5 6 7 8],'XTickLabel',...
+    {'-++', '+++', '--+', '+-+','-+-','++-','---','+--'});
 
+% set(axes1,'FontSize',12,'XTick',[1 2 3 4 5 6 7 8 9 10 11 12],'XTickLabel',...
+%     {'-30:-25','-25:-20','-20:-15','-15:-10','-10:-5','-5:0','0:5','5:10','10:15','15:20','20:25','25:30'});
 % set(axes1,'FontSize',12,'XTick',[1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32],'XTickLabel',...
 %     {'-160:-150','-150:-140','-140:-130','-130:-120','-120:-110','-110:-100','-100:-90','-90:-80','-80:-70','-70:-60','-60:-50','-50:-40','-40:-30','-30:-20','-20:-10','-10:0','0:10','10:20','20:30','30:40','40:50','50:60','60:70','70:80','80:90','90:100','100:110','110:120','120:130','130:140','140:150','150:160'});
-
 %% SIo
 % Control
 S1F = load('20190509_S1F_sortedspikes.mat'); %% paths to neural data
 S1U = load('20190509_S1U_sortedspikes.mat');
 S1F = struct2cell(S1F); 
 S1U = struct2cell(S1U);
-Units = {[S1F; S1U]};
+Units = {[S1F; S1U]}; %% combine regions
 Units = Units{1};
 % Units = S1U; %% run individual area
 
-spikecount = [];
-timespikes = {};
-meanfiring = [];
+spikecount = []; timespikes = {}; meanfiring = [];
 for u = 1:length(Units)
     temp = Units{u}.times;
     for t=1:length(ControlTimes)
         inx=[];
-        inx=find(temp >= ControlTimes(t) & temp <= Cendtimes(t));
+        inx=find(temp >= ControlTimes(t) & temp <= Cendtimes(t)); %% spikes b/t start and end
         spikecount(t, u) = length(inx);
         Ts = []; Ts = temp(inx);
         if ~isempty(Ts)
             Ts = Ts - temp(1);
         end
         timespikes{t} = Ts;
-        meanfiring(t,u) = spikecount(t,u)/0.100; %% 100 ms
+        meanfiring(t,u) = spikecount(t,u)/0.100; %% avg over 100 ms
     end
 end
 
@@ -659,20 +602,8 @@ for d = 1:(length(directions)-1)
     end
 end
 S1Con = meanfr;
-
-% % Tuning Curve
-% yFit6 = [];
-% angle = 1:32; % x-axis
-% m = [];
-% for unit = 1:length(Units)
-%     y = S1Con(:,unit)';
-%     cos_fun = @(p,theta) p(1)+p(2)*cos(theta/180-p(3));
-% %     p = nlinfit(angle,y,cos_fun,[1 1 0]);
-%     yFit6(:,unit) = cos_fun(p,angle);
-% %     m(unit) = max(yFit6(:,unit));
-% end
-
 %%
+% Create tuning curve
 angle = 1:(length(directions)-1);
 for u = 2
     figure;
@@ -680,31 +611,27 @@ for u = 2
     hold(axes1,'on');
     plot(angle,S1Con(:,u),'LineWidth',1.5,'Color','r') % actual data
     hold on
-%     plot([-30:30],yFit6(:,u),'r-.') % cosine fit
-%     legend('Actual Data','Cosine Fit')
 end
-% ylabel('Average Firing Rate');
-% xlabel('3D angle (°)');
+ylabel('Average Firing Rate');
+xlabel('3D angle (°)');
 title('SIo');
-xlim(axes1,[0.5 4.5]);
+xlim(axes1,[0.5 8.5]);
 box(axes1,'on');
 hold(axes1,'off');
 set(axes1,'FontSize',18,'XTick',[1 2 3 4 5 6 7 8],'XTickLabel',...
     {'-++', '+++', '--+', '+-+','-+-','++-','---','+--'});
-%         {'0:5','5:10','10:15','15:20','20:25','25:30'});
 
 % set(axes1,'FontSize',12,'XTick',[1 2 3 4 5 6 7 8 9 10 11 12],'XTickLabel',...
 %     {'-30:-25','-25:-20','-20:-15','-15:-10','-10:-5','-5:0','0:5','5:10','10:15','15:20','20:25','25:30'});
 % set(axes1,'FontSize',12,'XTick',[1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32],'XTickLabel',...
 %     {'-160:-150','-150:-140','-140:-130','-130:-120','-120:-110','-110:-100','-100:-90','-90:-80','-80:-70','-70:-60','-60:-50','-50:-40','-40:-30','-30:-20','-20:-10','-10:0','0:10','10:20','20:30','30:40','40:50','50:60','60:70','70:80','80:90','90:100','100:110','110:120','120:130','130:140','140:150','150:160'});
-
 %%
 % Nerve Block
 S1F = load('20190510_S1F_sortedspikes.mat'); %% paths to neural data
 S1U = load('20190510_S1U_sortedspikes.mat');
 S1F = struct2cell(S1F); 
 S1U = struct2cell(S1U);
-Units = {[S1F; S1U]};
+Units = {[S1F; S1U]}; %% combine regions
 Units = Units{1};
 % Units = S1F; %% run individual area
 
@@ -715,14 +642,14 @@ for u = 1:length(Units)
     temp = Units{u}.times;
     for t=1:length(NBTimes)
         inx=[];
-        inx=find(temp >= NBTimes(t) & temp <= NBendtimes(t));
+        inx=find(temp >= NBTimes(t) & temp <= NBendtimes(t)); %% spikes b/t start and end
         spikecount(t, u) = length(inx);
         Ts = []; Ts = temp(inx);
         if ~isempty(Ts)
             Ts = Ts - temp(1);
         end
         timespikes{t} = Ts;
-        meanfiring(t,u) = spikecount(t,u)/0.100; %% 100 ms
+        meanfiring(t,u) = spikecount(t,u)/0.100; %% avg over 100 ms
     end
 end
 
@@ -743,25 +670,26 @@ for d = 1:(length(directions)-1)
     end
 end
 S1NB = meanfr;
+%%
+% Create tuning curve
+angle = 1:(length(directions)-1);
+for u = 2
+    figure;
+    axes1 = axes;
+    hold(axes1,'on');
+    plot(angle,S1NB(:,u),'LineWidth',1.5,'Color','r') % actual data
+    hold on
+end
+ylabel('Average Firing Rate');
+xlabel('3D angle (°)');
+title('SIo');
+xlim(axes1,[0.5 8.5]);
+box(axes1,'on');
+hold(axes1,'off');
+set(axes1,'FontSize',18,'XTick',[1 2 3 4 5 6 7 8],'XTickLabel',...
+    {'-++', '+++', '--+', '+-+','-+-','++-','---','+--'});
 
-% % Tuning Curves
-% yFit6 = [];
-% angle = [1:6]; % x-axis
-% m = [];
-% for unit = 1:length(Units)
-%     y = S1NB(:,unit)';
-%     cos_fun = @(p,theta) p(1)+p(2)*cos(theta/180-p(3));
-%     p = nlinfit(angle,y,cos_fun,[1 1 0]);
-%     yFit6(:,unit) = cos_fun(p,angle);
-%     m(unit) = max(yFit(:,unit));
-% end
-
-% for u = 1:length(Units)
-%     figure;
-%     plot(angle,S1NB(:,u)) % actual data
-%     xlabel('Angle (deg)')
-%     ylabel('Average Firing Rate')
-%     hold on
-%     %plot(angle,yFit6(:,u),'r-.') % cosine fit
-%    legend('Actual Data','Cosine Fit')
-% end
+% set(axes1,'FontSize',12,'XTick',[1 2 3 4 5 6 7 8 9 10 11 12],'XTickLabel',...
+%     {'-30:-25','-25:-20','-20:-15','-15:-10','-10:-5','-5:0','0:5','5:10','10:15','15:20','20:25','25:30'});
+% set(axes1,'FontSize',12,'XTick',[1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32],'XTickLabel',...
+%     {'-160:-150','-150:-140','-140:-130','-130:-120','-120:-110','-110:-100','-100:-90','-90:-80','-80:-70','-70:-60','-60:-50','-50:-40','-40:-30','-30:-20','-20:-10','-10:0','0:10','10:20','20:30','30:40','40:50','50:60','60:70','70:80','80:90','90:100','100:110','110:120','120:130','130:140','140:150','150:160'});
