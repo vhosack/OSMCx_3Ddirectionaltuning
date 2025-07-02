@@ -1,20 +1,40 @@
 %% Determine if neuron is directionally tuned & get PDs of tuned (feeding)
 %% Determine if neuron is directionally tuned
-p = [];
-for u = 1:length(FRbyUnit)
-    p(u) = kruskalwallis(FRbyUnit{u}',[],'off');
+datamat = {};
+for u = 1:length(FRbyUnit{1})
+    datamat{u} = zeros(8,8000);
+    datamat{u}(:,1:80) = FRbyUnit{1}{u};
+    for i = 1:99
+        datamat{u}(:,(80*i)+1:80*(i+1)) = FRbyUnit{i+1}{u};
+    end
+    p(u) = kruskalwallis(datamat{u}',[],'off');
 end
+
 tuned = p < 0.05;
 percentTuned = mean(tuned)*100;
+
+%% Control
+p = [];
+percentTuned = [];
+% for i = 1:100
+    for u = 1:length(FRbyUnit{i})
+        p(u) = kruskalwallis(FRbyUnit{i}{u}',[],'off');
+    end
+    tuned = p < 0.05;
+    percentTuned(i) = mean(tuned)*100;
+% end
 
 %%
 % NB
 p = [];
-for u = 1:length(FRbyUnit2)
-    p(u) = kruskalwallis(FRbyUnit2{u}',[],'off');
+percentTuned2 = [];
+for i = 1:100
+    for u = 1:length(FRbyUnit2{i})
+        p(u) = kruskalwallis(FRbyUnit2{i}{u}',[],'off');
+    end
+    tuned2 = p < 0.05;
+    percentTuned2(i) = mean(tuned2)*100;
 end
-tuned2 = p < 0.05;
-percentTuned2 = mean(tuned2)*100;
 %% Get meanfr of only tuned 
 % Control
 onlytuned = cell(length(FRbyUnit));
@@ -24,7 +44,7 @@ meanfr = [];
 for u = 1:length(Tuned)
     temp = Tuned{u};
     for d = 1:(length(directions)-1)
-        meanfr(d,u) = sum(temp(d,:))/ncycles;
+        meanfr(d,u) = sum(temp{d})/ncycles;
     end
 end
 FR = meanfr';
@@ -49,7 +69,7 @@ for unit = 1:height(FR)
     [p, d] = max(FR(unit,:));
     pref(unit) = d;
 end
-pref2 = pref;
+pref1 = pref;
 
 % figure;
 % histogram(pref,'BinLimits',[0.5,3.5],'normalization','probability','FaceAlpha',0.8,'FaceColor',[0.9290 0.6940 0.1250],...

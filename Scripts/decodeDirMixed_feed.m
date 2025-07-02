@@ -1,8 +1,8 @@
-%% KNN Classifier to decode feeding direction from firing rate of each neuron
+%% Combined M1 and S1 KNN Decoding (Feeding)
 %% Create data matrix
-D1 = zeros(1,45); D1(:) = 1;
-D2 = zeros(1,45); D2(:) = 2;
-D3 = zeros(1,45); D3(:) = 3;
+D1 = zeros(1,90); D1(:) = 1;
+D2 = zeros(1,90); D2(:) = 2;
+D3 = zeros(1,90); D3(:) = 3;
 % D4 = zeros(1,90); D4(:) = 4;
 % D5 = zeros(1,90); D5(:) = 5;
 % D6 = zeros(1,90); D6(:) = 6;
@@ -14,16 +14,20 @@ vecI = vecI';
 % % Control
 % Vec = [];
 % for u = 1:length(FRbyUnit)
-%     Vec(u,:) = [FRbyUnit{u}(1,:) FRbyUnit{u}(2,:) FRbyUnit{u}(3,:)];% FRbyUnit{u}(4,:) FRbyUnit{u}(5,:) FRbyUnit{u}(6,:)];% FRbyUnit{u}(7,:) FRbyUnit{u}(8,:)];
+%     Vec(u,:) = [FRbyUnit{u}(1,:) FRbyUnit{u}(2,:) FRbyUnit{u}(3,:) FRbyUnit{u}(4,:) FRbyUnit{u}(5,:) FRbyUnit{u}(6,:)];% FRbyUnit{u}(7,:) FRbyUnit{u}(8,:)];
 % end
 % FR = Vec';
 
 % Nerve Block
 Vec = [];
 for u = 1:length(FRbyUnit2)
-    Vec(u,:) = [FRbyUnit2{u}(1,:) FRbyUnit2{u}(2,:) FRbyUnit2{u}(3,:)];% FRbyUnit2{u}(4,:) FRbyUnit2{u}(5,:) FRbyUnit2{u}(6,:)];
+    Vec(u,:) = [FRbyUnit2{u}(1,:) FRbyUnit2{u}(2,:) FRbyUnit2{u}(3,:) FRbyUnit2{u}(4,:) FRbyUnit2{u}(5,:) FRbyUnit2{u}(6,:)];
 end
 FR = Vec';
+%% Make M1 matrix
+FR_M1 = FR;
+%% Make S1 matrix
+FR_S1 = FR;
 %% Select training and test trials (80:20 split)
 ind = {};
 allind = {};
@@ -37,9 +41,14 @@ end
 %% Run KNN for 28 neurons
 percentCorrect = [];
 for i = 1:100
-%   neuronind = randperm(width(FR),28); %% select 28 random neurons
-%   FRnew = FR(:,neuronind);
-FRnew = FR; %% all neurons
+    M1ind = randperm(width(FR_M1),25); %% select 25 random M1 neurons
+    FR = FR_M1;
+    FR(:,M1ind) = [];
+
+    S1ind = randperm(width(FR_S1),25); %% select 25 random S1 neurons
+    FRS = FR_S1(:,S1ind);
+
+    FRnew = [FR FRS];
 
   fr2 = FRnew(ind{i},:);
   response2 = vecI(ind{i});

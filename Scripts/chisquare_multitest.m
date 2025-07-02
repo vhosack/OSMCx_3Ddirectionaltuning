@@ -1,11 +1,11 @@
 %% Compare percent tuned between groups (Chi-square)
 % save tuned for 2 groups to compare
 %% MIo vs SIo
-M1 = tunedM1;
+M1 = tunedM1';
 Mind = cell(1,length(tunedM1));
 Mind(:) = {'M1'};
 
-SC = tunedSC;
+SC = tunedSC';
 Sind = cell(1,length(tunedSC));
 Sind(:) = {'SC'};
 y1 = [M1; SC];

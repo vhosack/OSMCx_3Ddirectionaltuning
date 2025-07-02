@@ -2,6 +2,7 @@
 %% Load Data
 Before = load('20181210_Kinematics_Before.mat');
 After = load('20181210_Kinematics_After.mat');
+
 %% Get trajectories (Before)
 right = find(Before.Kinematics.SpoutNumber == 2);
 middle = find(Before.Kinematics.SpoutNumber == 1);
@@ -183,7 +184,9 @@ Rsd = std(Rdist,"omitnan");
 
 % If distance is > 2 std, mark as missed
 Lmiss = sum(Ldist > 2*Lsd)/length(lefts);
+
 Mmiss = sum(Mdist > 2*Msd)/length(middles);
+
 Rmiss = sum(Rdist > 2*Rsd)/length(rights);
 
 % Total proportion of missed cycles
@@ -375,7 +378,9 @@ Rsd = std(Rdist,"omitnan");
 
 % If distance is > 2 std, mark as missed
 Lmiss = sum(Ldist > 2*Lsd)/length(lefts);
+
 Mmiss = sum(Mdist > 2*Msd)/length(middles);
+
 Rmiss = sum(Rdist > 2*Rsd)/length(rights);
 
 % Total proportion of missed cycles
