@@ -20,20 +20,17 @@ M1U = load('20190228_M1U_sortedspikes.mat');
 % M1F = struct2cell(M1F); 
 M1U = struct2cell(M1U);
 % Units = [M1F; M1U];
-
 Units = M1U(Ind_Fd);
 %%
 Counts = {};
 for u = 1:length(Units)
     temp = Units{u}.times;
     for t=1:length(traj)
-
         if isnan(times{t}(end))
             continue
         elseif isnan(times{t}(1))
             continue
         end
-
         % 1ms bins for FA %
         edges = times{t}(1) : 0.001 : (times{t}(end) + 0.001); %
         allCounts = zeros(1, length(edges) - 1); %
@@ -50,12 +47,10 @@ for i = 1:length(data)
 %     Data(i).condition = vecI{i};
 %     {data{i}; vecI{i}};
 end
-
 %% Dimensionality reduction
 % D(itrial).data : (num_neurons x num_1ms_bins)
 DataHigh(Data, 'DimReduce');
 % DataHigh(D);
-
 %%
 figure;
 for d = 1:length(D)
@@ -70,7 +65,6 @@ end
 xlabel('Factor 1');
 ylabel('Factor 2');
 zlabel('Factor 3');
-
 %% 500 ms around min gape
 %% Load data
 load('20190228_Kinematics.mat')
@@ -89,7 +83,6 @@ for i = 1:height(trial)
     temptimes = Kinematics.NeuralIndex{strcmp(trial.Trialname(i),Kinematics.TrialNames)}(:,3);
     times{i} = temptimes(Kinematics.GapeCycleInfo.MinGape(i)-20:Kinematics.GapeCycleInfo.MinGape(i)+20,:);
 end
-
 %% Drinking
 %% Load data
 load('20181210_Kinematics_Before.mat')
@@ -97,7 +90,6 @@ load('20181210_Kinematics_Before.mat')
 % Min tongue protrusion to spout
 ntrials = length(Kinematics.Cranium.points);
 Neural = Kinematics.NeuralIndex;
-
 ttptcols = find(contains(Kinematics.ColumnNames.points,'AnteriorM_'));
 
 ttpt = {};
@@ -130,12 +122,10 @@ times = horzcat(nAP{:});
 
 traj = traj(~cellfun('isempty',traj));
 times = times(~cellfun('isempty',times));
-
 %% Length of Trajs
 Dists = {};
 totalDist = [];
 for t = 1:length(traj)
-
     for i = 1:height(traj{t})-1
         t1 = traj{t}(i,:);
         t2 = traj{t}(i+1,:);
@@ -143,17 +133,14 @@ for t = 1:length(traj)
     end
     totalDist(t) = sum(Dists{t});
 end
-
 mean(totalDist,'omitnan')
 std(totalDist,[],'omitnan')
-
 %% Stable Units
 % load RyDataStats2
 inx = scoreW(:,2)>0.99;
 % sum(inx);
 stableUnits = units(inx,:);
 stableM1U = stableUnits(1:34,:); % 1-96
-
 %%
 % M1F = load('20181210b_M1F_sortedspikes.mat'); %% paths to neural data
 M1U = load('20181210b_M1U_sortedspikes.mat');
@@ -167,13 +154,11 @@ CountsDr = {};
 for u = 1:length(Units)
     temp = Units{u}.times;
     for t=1:length(traj)
-
         if isnan(times{t}(end))
             continue
         elseif isnan(times{t}(1))
             continue
         end
-
         % 1ms bins for FA %
         edges = times{t}(1) : 0.001 : (times{t}(end) + 0.001); %
         allCounts = zeros(1, length(edges) - 1); %
@@ -182,8 +167,6 @@ for u = 1:length(Units)
         CountsDr{t}(u,:) = allCounts;
     end
 end
-
-
 %% Get Feeding units (utah)
 % M1U = load('20190228_M1U_sortedspikes.mat');
 % M1U = struct2cell(M1U);
@@ -203,9 +186,7 @@ for t = 1:length(Counts)
     count{t} = sum(Counts{t},2);
     firingrate{t} = count{t}/0.2;
 end
-
 meanfiringrate = mean(cat(3,firingrate{:}),3);
-
 %% Combine drinking and feeding
 Counts_Fd = Counts_Fd(~cellfun('isempty',Counts_Fd)) ; 
 Counts_Dr = Counts_Dr(~cellfun('isempty',Counts_Dr)) ; 
@@ -225,14 +206,11 @@ for i = 1:length(data)
     Data(i).epochStarts = 1;
     Data(i).epochColors = [0.598590500684565,0.668487146264776,0.894564090918275];
 end
-
 %% Dimensionality reduction
 % D(itrial).data : (num_neurons x num_1ms_bins)
 DataHigh(Data, 'DimReduce');
 % DataHigh(D);
-
 %% Subsample trials
-
 indices_Fd = randperm(length(Counts_Fd),10); C_Fd = Counts_Fd(indices_Fd);
 indices_Dr = randperm(length(Counts_Dr),10); C_Dr = Counts_Dr(indices_Dr);
 
@@ -251,7 +229,6 @@ for i = 1:length(data)
     Data(i).epochStarts = 1;
 %     Data(i).epochColors = [0.598590500684565,0.668487146264776,0.894564090918275];
 end
-
 %% average trajectories
 % Feeding
 fdata = cat(3,D(1:1118).data);
@@ -266,7 +243,6 @@ ddata = cat(3,D(1119:1525).data);
 avgdataD = mean(ddata,3);
 plot3(avgdataD(1,:), avgdataD(2,:), avgdataD(3,:),'-','LineWidth',2);
 scatter3(avgdataD(1,end), avgdataD(2,end), avgdataD(3,end), 75,'>','filled');
-
 %% Separate feed and drink
 DSF = Data(1:1118);
 % DSF = Data(1119:1525);
@@ -281,7 +257,6 @@ scatter3(D.data(1,end),D.data(2,end),D.data(3,end),75,'>','filled');
 xlabel('Factor 1');
 ylabel('Factor 2');
 zlabel('Factor 3');
-
 %% fd and dr inter-traj dist
 Dists = [];
 for tp = 1:width(Fd.data)
@@ -291,9 +266,7 @@ for tp = 1:width(Fd.data)
 end
 mean(Dists)
 std(Dists)
-
 [h,p] = ttest(Dists);
-
 %% compare fd and dr distance travelled
 Vec = [interDistsF1_Fd interDistsF1_Dr];
 
@@ -301,7 +274,6 @@ C = cell(1,length(interDistsF1_Fd)); C(:) = {'Feeding'};
 B = cell(1,length(interDistsF1_Dr)); B(:) = {'Drinking'};
 vecI = [C B];
 vecI = vecI';
-
 %% Factor 1 inter-traj distance
 for p = 1:length(D)
     for di = 1:length(D)
@@ -315,14 +287,12 @@ for p = 1:length(D)
         end
     end
 end
-
 dists = Dists(~cellfun(@isempty,Dists));
 Distances = cell2mat(dists);
 Distances = unique(Distances,'rows','stable');
 Avg = mean(Distances,1);
 AllAvgs = mean(Avg)
 dev = std(Avg)
-
 %% one t-test (diff from 0)
 p = [];
 for pair = 1:height(Distances)

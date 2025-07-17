@@ -6,7 +6,6 @@ for u = 1:length(FRbyUnit)
 end
 tuned = p < 0.05;
 percentTuned = mean(tuned)*100;
-
 %%
 % NB
 p = [];
@@ -28,7 +27,6 @@ for u = 1:length(Tuned)
     end
 end
 FR = meanfr';
-
 %%
 % NB
 onlytuned = cell(length(FRbyUnit2));
@@ -58,7 +56,6 @@ pref2 = pref;
 % ylabel('Proportion of Neurons');
 % title('MIo');
 % set(gca,'FontSize',14,'YGrid','on');
-
 %%
 % Nerve Block
 pref = zeros(height(FR_NB),1);

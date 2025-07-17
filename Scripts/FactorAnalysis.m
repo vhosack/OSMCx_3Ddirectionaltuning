@@ -17,17 +17,13 @@ for i = 1:length(data)
     Data(i).epochColors = [0.598590500684565,0.668487146264776,0.894564090918275];
 end
 % Data = Data';
-
 % DS = struct('data',data,'condition',vecI);
 DSF = Data;
-
 %% Dimensionality reduction
 % D(itrial).data : (num_neurons x num_1ms_bins)
 DataHigh(Data, 'DimReduce');
-
 %% Visualise only
 DataHigh(D);
-
 %% Create structure (Feeding)
 directions = {'-++', '+++', '--+', '+-+','-+-','++-','---','+--'};
 CountsD = {};
@@ -47,10 +43,10 @@ end
 data = [CountsD{1}'; CountsD{2}'; CountsD{3}'; CountsD{4}'; CountsD{5}'; CountsD{6}'; CountsD{7}'; CountsD{8}'];
 condition = [conD{1}; conD{2}; conD{3}; conD{4}; conD{5}; conD{6}; conD{7}; conD{8}];
 DSF = struct('data',data,'type','traj','condition',condition);
-
 %% Dimensionality reduction
 DataHigh(DSF, 'DimReduce');
 
+% Load .mat file in FA folder
 %% Plot first 2/3 latent variables
 % colorvec = {[0.39 0.83 0.07 0.6], [0.00 0.00 1.00 0.6], [0.93 0.69 0.13 0.7]};
 figure;
@@ -67,7 +63,6 @@ end
 xlabel('Factor 1');
 ylabel('Factor 2');
 zlabel('Factor 3');
-
 %% Calculate distance b/t pairs of trajectories
 Dists = {};
 for p = 1:length(D)
@@ -82,24 +77,20 @@ for p = 1:length(D)
         end
     end
 end
-
 dists = Dists(~cellfun(@isempty,Dists));
 Distances = cell2mat(dists);
 Distances = unique(Distances,'rows','stable');
 Avg = mean(Distances,1);
 AllAvgs = mean(Avg)
 std(Avg)
-
 %% anova on pairs
 [p,tbl,stats] = anova1(Distances');
 [c,~,~,gnames] = multcompare(stats);
-
 %% one sided t-test (diff from 0)
 p = [];
 for pair = 1:height(Distances)
     [h,p(pair)] = ttest(Distances(pair,:));
 end
-
 %% Each pair quick set
 ConDist = Distances;
 %% NB
@@ -113,7 +104,6 @@ for n = 1:height(Distances)
 end
 sig = p < 0.05;
 mean(sig)
-
 %% Feeding: dist b/t Ant/Post pairs of directions
 % Determine across which direction there is most/least variation compared
 % to others
@@ -127,11 +117,9 @@ stdAP = std(AntPost,0,'all')
 Others = setdiff(Distances,AntPost,'rows');
 avgOthers = mean(Others,'all')
 stdOthers = std(Others,0,'all')
-
 %% Compare groups
 [h,p] = ttest2(AntPost,Others);
 mean(p)
-
 %% Length of trajectories
 Dists = {};
 totalDist = [];
@@ -144,10 +132,8 @@ for d = 1:length(D)
     end
     totalDist(d) = sum(Dists{d});
 end
-
 mean(totalDist)
 std(totalDist)
-
 %% Compare total dist travelled
 %% Control
 Contot = totalDist;
@@ -155,7 +141,6 @@ Contot = totalDist;
 NBtot = totalDist;
 %% Compare each
 [h,p] = ttest2(Contot,NBtot);
-
 %% Plot inter-trajectory distances over time (MIo)
 % t = -0.24:0.01:0.25;
 t = 0.01:0.01:0.1;
@@ -164,7 +149,20 @@ figure;
 plot(t,mdists);
 hold on;
 xlabel('Time (s)');
-ylabel('Distance between direction-mean trajectories');
+ylabel('Normalized distance between trajectories');
 %% Add SIo
 sdists = mean(Distances, 1);
 plot(t,sdists);
+%% Normalize inter-trajectory distances
+Distances=normalize(Distances,2,'range');
+%% Normalize distance travelled
+% M1dist = totalDist;
+Mdist_Y = totalDist;
+M1dist = [Mdist_R Mdist_Y];
+%%
+% S1dist = totalDist;
+Sdist_Y = totalDist;
+S1dist = [Sdist_R Sdist_Y];
+%%
+distNorm = M1dist-S1dist./(M1dist+S1dist);
+[p,h] = signrank(distNorm)

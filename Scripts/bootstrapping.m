@@ -1,3 +1,6 @@
+%% Assign dataset
+% Load meanfiring.mat
+meanfiring = meanfiring_RMDrCon;
 %% Drinking directions
 L = cell(1,height(meanfiring{1}));
 L(:) = {'Left'};
@@ -7,12 +10,10 @@ R = cell(1,height(meanfiring{3}));
 R(:) = {'Right'};
 vecI = [L M R];
 vecI = vecI'; %% directions
-
 %% Run bootstrap
 % run after getting mean firing rates from directionDrink.m
 nBoot = 1000;
 tetas={'Left'; 'Middle'; 'Right'};
-
 Vec = {}; p = []; m = {}; mDir = {};
 % count=1;
 % tCount=0;
@@ -40,11 +41,14 @@ for u = 1:width(meanfiring{1})
     end
     pB(u) = sum(ChiBoot(u,:) > Chi(u))/nBoot;
 end
-
 tuned = pB < 0.05;
 percentTuned = mean(tuned)*100
-
+%% Assign dataset
+% load meanfiring.mat and catind.mat
+meanfiring = meanfiring_RMFdCon;
 %% Feeding data structure
+% ConI = 8 (directions) x 80 samples of indices from catind
+
 % C = horzcat(ConI{:});
 C = horzcat(ConI(:));
 % C = horzcat(NBI(:));
@@ -53,22 +57,19 @@ directions = {'-++', '+++', '--+', '+-+','-+-','++-','---','+--'};
 MeanD = {};
 conD = {};
 for d = 1:length(directions)
-        MeanD{d} = meanfiring(catind{d},:); % Control
+        MeanD{d} = meanfiring(catind{d},:); % Control all
         conD{d} = cat(catind{d});
 %         MeanD{d} = meanfiring(C(d,:),:); % sample
 %         conD{d} = cat(C(d,:));
 
-%         MeanD{d} = meanfiring(catind2{d},:); % NB
+%         MeanD{d} = meanfiring(catind2{d},:); % NB all
 %         conD{d} = cat2(catind2{d});
 %         MeanD{d} = meanfiring(NBI(d,:),:); % sample
 %         conD{d} = cat2(NBI(d,:));
 end
 condition = [conD{1}; conD{2}; conD{3}; conD{4}; conD{5}; conD{6}; conD{7}; conD{8}];
-
 %% Run bootstrap
-% run after getting mean firing rates from directionFeed.m
 nBoot = 1000;
-
 Vec = {}; p = []; m = {}; mDir = {};
 M = []; bM = []; pBoot = []; pB = [];
 Chi = []; ChiBoot = [];
@@ -81,7 +82,6 @@ for u = 1:width(MeanD{1})
         bRates{d}=MeanD{d}(indx); % Vec{u}(indx) -> MeanD{d}(indx)
     end
     bootRates = vertcat(bRates{:});
-    
     [p,tbl,stats] = kruskalwallis(meanfiring(C,u),cat(C)','off'); % Vec{u}(C) -> meanfiring(C,u); condition(C) -> cat(C)
     Chi(u) = cell2mat(tbl(2,5));
     for i = 1:nBoot
@@ -93,17 +93,14 @@ for u = 1:width(MeanD{1})
     end
     pB(u) = sum(ChiBoot(u,:) > Chi(u))/nBoot;
 end
-
 tuned = pB < 0.05;
 percentTuned = mean(tuned)*100
-
 %% Preferred Directions
 %% Drinking
 %% Get meanfr of only tuned 
 Left = meanfiring{1}(:,tuned);
 Middle = meanfiring{2}(:,tuned);
 Right = meanfiring{3}(:,tuned);
-
 % Left
 meanfr = [];
 ncycles = height(Left);
@@ -111,21 +108,18 @@ for n = 1:width(Left)
         meanfr(n) = sum(Left(:,n))/ncycles;
 end
 FR_l = meanfr;
-
 % Middle
 ncycles = height(Middle);
 for n = 1:width(Middle)
         meanfr(n) = sum(Middle(:,n))/ncycles;
 end
 FR_m = meanfr;
-
 % Right
 ncycles = height(Right);
 for n = 1:width(Right)
         meanfr(n) = sum(Right(:,n))/ncycles;
 end
 FR_r = meanfr;
-
 MeanFR = [FR_l; FR_m; FR_r]';
 %% Find PD
 pref = zeros(height(MeanFR),1);
@@ -141,11 +135,6 @@ end
 % title('Histogram of Preferred Directions of Sensory Neurons (Nerve Block)');
 %% Save to compare Con with NB
 pref1 = pref;
-
-
-
-
-
 %%
 L = cell(1,height(meanfiring{1}));
 L(:) = {'Left'};
@@ -155,16 +144,13 @@ R = cell(1,height(meanfiring{3}));
 R(:) = {'Right'};
 vecI = [L M R];
 vecI = vecI'; %% directions
-
 Vec = {};
 p = [];
 for u = 1:width(meanfiring{1})
     Vec{u} = [meanfiring{1}(:,u); meanfiring{2}(:,u); meanfiring{3}(:,u)]; %% trial x neuron
 end
-
 %% Run Drinking
 nBoot = 10000;
-
 bootRates = {};
 M = []; bM = []; pB = [];
 for d = 1:3
@@ -176,7 +162,6 @@ for d = 1:3
 %         st{d}(:,u) = bootstrp(1000,@std,temp);
     end
 end
-
 A = abs(M{1}-M{2}); B = abs(M{2}-M{3}); C = abs(M{1}-M{3});
 bA = abs(bM{1}-bM{2}); bB = abs(bM{2}-bM{3}); bC = abs(bM{1}-bM{3});
 diff = (A+B+C)/3;
@@ -188,13 +173,10 @@ sortedBoot = sort(diffBoot);
 for u = 1:width(meanfiring{d})
     pB(u) = length(find(sortedBoot(:,u)>diff(u)))/nBoot;
 end
-
 tuned = pB < 0.05;
 percentTuned = mean(tuned)*100
-
 %% Run Feeding
 nBoot = 1000;
-
 bootRates = {};
 M = []; bM = []; pB = [];
 dv = {}; dvBoot = {}; meandiff = {}; meandiffBoot = {};
@@ -211,7 +193,6 @@ for u = 1:length(FRbyUnit)
     for i = 1:nBoot
         dvBoot{u} = abs(bM{u}(i,:)-bM{u}(i,:)');
     end
-
 %     A = M{1}-M{2}; B = M{2}-M{3}; C = M{1}-M{3};
 %     bA = bM{1}-bM{2}; bB = bM{2}-bM{3}; bC = bM{1}-bM{3};
 %     diff{u} = (A+B+C)/3;
@@ -219,17 +200,14 @@ for u = 1:length(FRbyUnit)
     meandiff{u} = mean(nonzeros(dv{u}));
     meandiffBoot{u} = mean(nonzeros(dvBoot{u}));
 end
-
 % sorted = sort(diff);
 sortedBoot = sort(diffBoot);
 
 for u = 1:length(FRbyUnit)
     pB(u) = length(find(sortedBoot(:,u)<diff(u)))/nBoot;
 end
-
 tuned = pB < 0.05;
 percentTuned = mean(tuned)*100
-
 %%
 L = cell(1,height(m{1}));
 L(:) = {'Left'};
@@ -240,7 +218,6 @@ R(:) = {'Right'};
 vecI = [L M R];
 vecI = vecI'; %% directions
 vecI_shuffled = vecI(randperm(numel(vecI)));
-
 %%
 Vec = {};
 p = [];
@@ -260,12 +237,10 @@ percentTuned = mean(tuned)*100
 % percentTuned_shuffled = mean(tuned_shuffled)*100
 % 
 % p_boot = length(find(p<p_shuffled))/width(meanfiring{d})
-
 %% Find PDs
 % Assign variables
 tuned = [tunedRyDrM1FCon tunedRyDrM1UCon];
 spikeCountCellArray = [sVRyM1FCon sVRyM1UCon];
-
 %% Get meanfr of only tuned
 onlytuned = cell(length(spikeCountCellArray));
 onlytuned(tuned) = spikeCountCellArray(tuned);
@@ -279,11 +254,9 @@ for u = 1:length(Tuned)
     end
 end
 FR = meanfr';
-
 %% Find PD Bootstrap
 % Control
 nBoot = 1000;
-
 Vec = {};
 pref = zeros(length(spikeCountCellArray),1);
 for u = 1:length(spikeCountCellArray)

@@ -29,10 +29,8 @@ for unit = 1:height(Tuned)   % Tuned2 if doing
     tuningmdl{unit} = fitlm(tuningtbl{unit});
     p(unit) = coefTest(tuningmdl{unit});
 end
-
 fits = p < 0.05;
 percentFits = mean(fits)*100;
-
 %% Get preferred directions
 fitmdls = tuningmdl(fits); % pull only neurons that 
 fittbls = tuningtbl(fits); %   fit the tuning function
@@ -82,7 +80,6 @@ plot3([0 0], [0 0], zlim, '--k', 'LineWidth', 1);
 % plotCircle3D([0 0 0],[1 0 0],0.66);
 % plotCircle3D([0 0 0],[1 0 0],1);
 % s = sphere(10);
-
 %% plot second dataset and separate color bar (optional)
 c_dat = pds;         % pick the data you want to use to define color
 pnt_colors = interp1(linspace(min(c_dat), max(c_dat), size(c_map, 1)),...
@@ -91,7 +88,6 @@ for fm = 1:length(fitmdls)
     scatter3(pdir{fm}(1),pdir{fm}(3),pdir{fm}(2),40,pnt_colors(fm,:),'x');
 end
 colorbar
-
 %% plot costheta
 figure;
 dirgroups = 1:90:721;
@@ -105,31 +101,24 @@ for dir = 1:8
     hold on;
 end
 plot(costheta,dM,'k','LineWidth',1);
-
 %% plot Id
-
 figure;
 % histogram(Id,'Normalization','probability');
 histogram(Id,'FaceAlpha',0.8,'FaceColor',[0.494117647058824 0.184313725490196 0.556862745098039],...
     'Normalization','probability','BinMethod','auto');
-
 ylabel('Proportion of neurons');
 xlabel('Directional Index');
 title('SIo');
-
 set(gca,'FontSize',14,'YGrid','on');
-
 %% Mean PD + variance
 R = sqrt(sum(cx)^2 + sum(cy)^2 + sum(cz)^2)
 meanPD = [sum(cx)/R, sum(cy)/R, sum(cz)/R]
 sphvar = (length(fitmdls)-R)/length(fitmdls)
-
 %% Rayleigh test
 ax = acos(cx); ay = acos(cy); az = acos(cz);
 [p1,z1] = circ_rtest(ax)
 [p2,z2] = circ_rtest(ay)
 [p3,z3] = circ_rtest(az)
-
 %% Concentration test
 % axM = ax; ayM = ay; azM = az;
 axS = ax; ayS = ay; azS = az;

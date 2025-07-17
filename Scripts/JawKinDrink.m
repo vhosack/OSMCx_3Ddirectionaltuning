@@ -55,14 +55,12 @@ yyaxis right
 TT = ttpt{1}(:,1);
 plot(t,TT); ylabel('Anterior-Posterior position'); ylim([20 65]);
 scatter(mins{1}/200,Mins{1},'^','filled');
-
 %% Plot Jaw Pitch and TT Ant-Post (mean)
 figure;
 t = 1:100;
 plot(meanJawKin); ylabel('Jaw Pitch'); hold on;
 yyaxis right
 plot(meanttAP); ylabel('Ant-Post TT pos');
-
 %% Plot all variables (mean)
 figure;
 t = 1:100;
@@ -72,7 +70,6 @@ subplot(3,1,2); plot(meanJawKin(:,2)); ylabel('y-translation'); hold on;
 % edges = [t, fliplr(t)]; sem = [upper(:,2)', fliplr(lower(:,2))']; fill(edges,sem,'b');
 subplot(3,1,3); plot(meanJawKin(:,3)); ylabel('z-translation'); xlabel('% of Cycle');  hold on;
 % edges = [t, fliplr(t)]; sem = [upper(:,3)', fliplr(lower(:,3))']; fill(edges,sem,'b');
-
 %% Feeding
 %% Load Data
 Control = load('20190228_Kinematics.mat');

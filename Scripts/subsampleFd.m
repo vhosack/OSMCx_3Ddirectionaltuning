@@ -143,7 +143,7 @@ Lat = {};
 % [~, idx] = max(like); % find q that maximises likelihood of data
 % dims = candidateDims(idx);
     % Dimensionality reduction
-    dims = 20;
+    dims = 40;
     [newD, C, Lat, explained, params] = reducedims_edit(DSF,alg, dims, handles);
 % end
 

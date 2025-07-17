@@ -67,12 +67,6 @@ for i = 1:ntrials
     ttpt_m{i} = Middle{i}(:,ttptcols);
     neural_m{i} = Neural_m{i}(:,3);
     npeaks = length(ttpt_m{i});
-%     for j = 1:npeaks
-%         if ttpt_m{i}(j,1) < 25
-%             ttpt_m{i}(:,:) = NaN;
-%             neural_m{i} = NaN;
-%         end
-%     end
     %plot3(ttpt_m{i}(:,3), ttpt_m{i}(:,2), ttpt_m{i}(:,1), 'b');
     stretch = ttpt_m{i}(:,2);
     [~,minstretch_m] = findpeaks(stretch*-1,'MinPeakProminence',10);
@@ -109,12 +103,6 @@ for i = 1:ntrials
     ttpt_l{i} = Left{i}(:,ttptcols);
     neural_l{i} = Neural_l{i}(:,3);
     npeaks = length(ttpt_l{i});
-%     for j = 1:npeaks
-%         if ttpt_l{i}(j,1) < 25
-%             ttpt_l{i}(:,:) = NaN;
-%             neural_l{i} = NaN;
-%         end
-%     end
     %plot3(ttpt_l{i}(:,3), ttpt_l{i}(:,2), ttpt_l{i}(:,1), 'g');
     stretch = ttpt_l{i}(:,2);
     [~,minstretch_l] = findpeaks(stretch*-1,'MinPeakProminence',10);
@@ -186,7 +174,6 @@ Units = {[S1F; S1U]};
 Units = Units{1};
 % Units = S1U;
 
-
 timespikes = {};
 for u = 1:length(Units)
     temp = Units{u}.times;
@@ -196,20 +183,14 @@ for u = 1:length(Units)
         Cycles{u}{dir} = cycles;
         first = cycles-0.5;
         last = cycles+0.5;
-
         for c = 1:length(cycles)
             inx = find(temp >= first(c) & temp <= last(c));
             Ts = []; Ts = temp(inx);
-%             if ~isempty(Ts)
-%                 Ts = Ts - temp(1);
-%             end
             Ts = Ts - cycles(c);
             timespikes{u}{dir}{c} = Ts;
         end
     end
 end
-
-%%
 %% Motor Cortex
 % M1F = load('20181210b_M1F_sortedspikes.mat');
 % M1U = load('20181210b_M1U_sortedspikes.mat');
@@ -246,7 +227,6 @@ for u = 1:length(Units)
             time = last(c) - first(c);
             meanfiring{dir}(c,u) = spikecount{dir}(c,u)/time;
         end
-
     end
 end
 
@@ -296,7 +276,6 @@ histogram(pref,'normalization','pdf');
 xlabel('Preferred Direction');
 ylabel('Proportion of Neurons');
 title('Histogram of Preferred Directions of Motor Neurons (Control)');
-
 %% Feeding
 % % Select dataset
 % % Control
@@ -330,16 +309,13 @@ S1U = struct2cell(S1U);
 Units = {[S1F; S1U]};
 Units = Units{1};
 
-
 %cut trials
 conT = ControlTimes + 0.05;
-
 spikecount = [];
 timespikes = {};
 meanfiring = [];
 for u = 1:length(Units)
     temp = Units{u}.times;
-    
     for t=1:length(ControlTimes)
         inx=[];
         inx=find(temp >= ControlTimes(t)-0.2 & temp <= Cendtimes(t)+0.2);
@@ -353,7 +329,6 @@ for u = 1:length(Units)
     end
 %     meanfiring = ~isempty(meanfiring);
 end
-
 timespks = timespikes(ConI,:);
 
 % Ranges of degrees
@@ -372,7 +347,6 @@ for d = 1:(length(directions)-1)
         FRbyUnit{n}(d,:) = firingrate(:,n);
     end
 end
-
 M1FCon = meanfr;
 
 %Preferred Directions

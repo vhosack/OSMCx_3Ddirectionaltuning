@@ -5,7 +5,6 @@ load('20181210_Kinematics_Before.mat');
 % Min tongue protrusion to spout
 ntrials = length(Kinematics.Cranium.points);
 Neural = Kinematics.NeuralIndex;
-
 ttptcols = find(contains(Kinematics.ColumnNames.points,'AnteriorM_'));
 
 ttpt = {};
@@ -56,7 +55,6 @@ diridx = find(ControlDir > -5 & ControlDir < 5); ConI = diridx;
 % % sum(inx);
 % stableUnits = units(inx,:);
 % stableM1U = stableUnits(1:34,:); % 1-96
-
 %% Load neural data
 M1U = load('20181210b_M1U_sortedspikes.mat');
 M1U = struct2cell(M1U);
@@ -79,7 +77,6 @@ for u = 1:length(Units)
         Counts_Dr{t}(u,:) = allCounts;
     end
 end
-
 %% Load data (feeding)
 load('20190228_Kinematics.mat')
 %% Get tongue tip position
@@ -91,7 +88,6 @@ trial = Kinematics.GapeCycleInfo;
 % Min tongue protrusion to spout
 ntrials = length(Kinematics.Cranium.points);
 Neural = Kinematics.NeuralIndex;
-
 ttptcols = find(contains(Kinematics.ColumnNames.points,'AnteriorM_'));
 
 ttpt = {};
@@ -157,7 +153,6 @@ for u = 1:length(Units)
         Counts_Fd{t}(u,:) = allCounts;
     end
 end
-
 %% Combine drinking and feeding
 Counts_Fd = Counts_Fd(~cellfun('isempty',Counts_Fd)) ; 
 Counts_Dr = Counts_Dr(~cellfun('isempty',Counts_Dr)) ; 

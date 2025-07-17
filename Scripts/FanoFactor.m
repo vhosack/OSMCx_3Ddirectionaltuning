@@ -22,7 +22,6 @@ for d = 1:3
     FF{d} = FF{d}(~Ind);
 end
 meanFF = mean([FF{1}; FF{2}; FF{3}]);
-
 %% Histogram
 directions = {'Left'; 'Middle'; 'Right'};
 dirmeans = {};
@@ -35,14 +34,12 @@ for d = 1:3
     title(directions{d});
     ylim([0 40]); %80 50 70 40
 end
-
 %%
 FFAll = [FF{1} FF{2} FF{3}];
 histogram(FFAll,'BinWidth',0.25);
 title('All');
 mean(FFAll)
 std(FFAll)
-
 %% Feeding
 FF= {};
 % stab = {};
@@ -65,7 +62,6 @@ for d = 1:8
     FF{d} = FF{d}(~Ind);
 end
 meanFF = mean([FF{1}; FF{2}; FF{3}; FF{4}; FF{5}; FF{6}; FF{7}; FF{8}]);
-
 %% Histogram
 directions = {'-++', '+++', '--+', '+-+','-+-','++-','---','+--'};
 dirmeans = [];
@@ -80,7 +76,6 @@ for d = 1:8
 end
 mean(dirmeans)
 std(dirmeans)
-
 %%
 FFAll = [FF{1} FF{2} FF{3} FF{4} FF{5} FF{6} FF{7} FF{8}];
 figure;
@@ -88,7 +83,6 @@ histogram(FFAll,'BinWidth',0.25);
 title('All');
 mean(FFAll)
 std(FFAll)
-
 %% Kruskal-wallis test (directions)
 %% Feeding
 FFBoth= {};
@@ -96,7 +90,6 @@ for d = 1:8
     FFBoth{d} = [FFRyM1Con{d} FFYeM1Con{d}]';
 %     FFBoth{d} = [meanFF_RyS1Con{d} meanFF_YeS1Con{d}]';
 end
-
 %%
 a = cell(1,height(FFBoth{1})); a(:) = {'AntSupL'};
 b = cell(1,height(FFBoth{2})); b(:) = {'AntSupR'};
@@ -112,8 +105,6 @@ vecI = vecI'; %% directions
 
 Vec = [FFBoth{1};FFBoth{2};FFBoth{3};FFBoth{4};FFBoth{5};FFBoth{6};FFBoth{7};FFBoth{8}]; %% trial x neuron
 p = kruskalwallis(Vec,vecI');
-
-
 %% Drinking
 FFBoth= {};
 for d = 1:3
@@ -131,7 +122,6 @@ vecI = vecI'; %% directions
 
 Vec = [FFBoth{1}; FFBoth{2}; FFBoth{3}]; %% trial x neuron
 p = kruskalwallis(Vec,vecI');
-
 %%
 FFM1 = [FFBoth{1};FFBoth{2};FFBoth{3};FFBoth{4};FFBoth{5};FFBoth{6};FFBoth{7};FFBoth{8}];
 %%
@@ -147,7 +137,6 @@ vecI = vecI'; %% directions
 Vec = [FFM1;FFS1]; %% trial x neuron
 % p = kruskalwallis(Vec,vecI');
 p = ranksum(FFM1,FFS1);
-
 %% Churchland's mean-matched FF
 %% Drinking
 % Counts = RyDrM1Con;
@@ -174,16 +163,13 @@ for d = 1%:3
 end
 
 mmFFYeDrS1NB = Result;
-
 %% Compare directions
 FF = [mmFFRyDrM1Con{1}.FanoFactor mmFFRyDrM1Con{2}.FanoFactor mmFFRyDrM1Con{3}.FanoFactor];
 p = kruskalwallis(FF);
-
 %% Compare regions
 M1 = [mmFFRyDrM1Con{1}.FanoFactor; mmFFRyDrM1Con{2}.FanoFactor; mmFFRyDrM1Con{3}.FanoFactor];
 S1 = [mmFFRyDrS1Con{1}.FanoFactor; mmFFRyDrS1Con{2}.FanoFactor; mmFFRyDrS1Con{3}.FanoFactor];
 [p,h] = ranksum(M1, S1);
-
 %%
 M1 = [mmFFRyFdS1Con{1}.FanoFactor; mmFFYeFdS1Con{1}.FanoFactor];
 S1 = [mmFFRyDrS1Con{1}.FanoFactor; mmFFYeDrS1Con{1}.FanoFactor];
@@ -199,7 +185,6 @@ Vec = [M1;S1]; %% trial x neuron
 p = ranksum(M1,S1);
 %%
 [p,h] = ranksum(mmFFYeDrM1NB{1}.FanoFactor, mmFFYeDrS1NB{1}.FanoFactor);
-
 %% Feeding
 Counts = YeFdS1NB;
 
@@ -224,7 +209,6 @@ for d = 1%:8
 %     outParams = plotScatter(Result, t, params);
 %     outParams = plotFano(Result{d});
 end
-
 mmFFYeFdS1NB = Result;
 %% Compare regions
 M1 = [fdResults{1}.FanoFactor; fdResults{2}.FanoFactor; fdResults{3}.FanoFactor; fdResults{4}.FanoFactor; fdResults{5}.FanoFactor; fdResults{6}.FanoFactor; fdResults{7}.FanoFactor; fdResults{8}.FanoFactor];
@@ -232,7 +216,7 @@ S1 = [fdResults_S1{1}.FanoFactor; fdResults_S1{2}.FanoFactor; fdResults_S1{3}.Fa
 [p,h] = ranksum(M1, S1);
 %%
 [p,h] = ranksum(mmFFRyFdM1NB{1}.FanoFactor, mmFFRyDrM1NB{1}.FanoFactor);
-%% alt
+%% alt (noy used)
 spikeCounts = [sVRyM1FCon sVRyM1UCon];
 
 times = 80:10:420;
@@ -248,6 +232,5 @@ for n = 1:length(spikeCounts)
         end
     end
 end
-
 %% plot
 figure; boxplot(Vec,vecI', 'symbol', '');

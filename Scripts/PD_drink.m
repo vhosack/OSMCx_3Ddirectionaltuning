@@ -15,7 +15,6 @@ for u = 1:width(meanfiring{1})
     Vec{u} = [meanfiring{1}(:,u); meanfiring{2}(:,u); meanfiring{3}(:,u)]; %% trial x neuron
     p(u) = kruskalwallis(Vec{u},vecI','off');
 end
-
 tuned = p < 0.05;
 percentTuned = mean(tuned)*100;
 %% Get meanfr of only tuned 
